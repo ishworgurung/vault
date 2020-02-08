@@ -66,13 +66,14 @@ type SSHHelperConfig struct {
 	AllowedRoles    string `hcl:"allowed_roles"`
 	TLSSkipVerify   bool   `hcl:"tls_skip_verify"`
 	TLSServerName   string `hcl:"tls_server_name"`
+	TLSMinVersion   int    `hcl:"tls_min_version"`
 }
 
 // SetTLSParameters sets the TLS parameters for this SSH agent.
 func (c *SSHHelperConfig) SetTLSParameters(clientConfig *Config, certPool *x509.CertPool) {
 	tlsConfig := &tls.Config{
 		InsecureSkipVerify: c.TLSSkipVerify,
-		MinVersion:         tls.VersionTLS12,
+		MinVersion:         uint16(c.TLSMinVersion),
 		RootCAs:            certPool,
 		ServerName:         c.TLSServerName,
 	}
@@ -161,6 +162,7 @@ func ParseSSHHelperConfig(contents string) (*SSHHelperConfig, error) {
 		"allowed_roles",
 		"tls_skip_verify",
 		"tls_server_name",
+		"tls_min_version",
 	}
 	if err := hclutil.CheckHCLKeys(list, valid); err != nil {
 		return nil, multierror.Prefix(err, "ssh_helper:")
